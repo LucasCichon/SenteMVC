@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sente.Common\Sente.Common.csproj" />
     <ProjectReference Include="..\Sente.Domain\Sente.Domain.csproj" />
   </ItemGroup>
 

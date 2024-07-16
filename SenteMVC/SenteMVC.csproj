@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sente.Application\Sente.Application.csproj" />
-    <ProjectReference Include="..\Sente.Common\Sente.Common.csproj" />
     <ProjectReference Include="..\Sente.Infrastructure\Sente.Infrastructure.csproj" />
   </ItemGroup>
 
