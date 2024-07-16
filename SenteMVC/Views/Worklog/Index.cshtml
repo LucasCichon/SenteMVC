@@ -1,0 +1,145 @@
+﻿@model Sente.Application.ViewModels.WorklogAnalysisResultViewModel
+
+@{
+    ViewData["Title"] = "Worklog Analysis";
+    var fromDate = ViewData["FromDate"]?.ToString() ?? DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd");
+    var toDate = ViewData["ToDate"]?.ToString() ?? DateTime.Now.ToString("yyyy-MM-dd");
+}
+
+<div class="container mt-5">
+    <h1 class="mb-4">Worklog Analysis</h1>
+
+    <form method="get" asp-action="Index" class="form-inline mb-4">
+        <div class="form-group mr-2">
+            <label for="fromDate" class="mr-2">From:</label>
+            <input type="date" class="form-control" id="fromDate" name="fromDate" value="@fromDate" required>
+        </div>
+        <div class="form-group mr-2">
+            <label for="toDate" class="mr-2">To:</label>
+            <input type="date" class="form-control" id="toDate" name="toDate" value="@toDate" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Analyze</button>
+    </form>
+
+    <div class="row">
+        <div class="col-md-12">
+            <h4>Combined Hours</h4>
+            <canvas id="combinedHoursChart"></canvas>
+        </div>
+    </div>
+
+
+
+    <h3 class="mt-5">Summary</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Hours</th>
+                <th>Percentage</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                var totalHours = Math.Round(Model.ProductiveHours + Model.SupportiveHours + Model.DevelopmentHours + Model.NonProductiveHours, 2);
+
+                string FormatPercentage(double part, double total)
+                {
+                    return total > 0 ? $"{Math.Round((part / total * 100), 2) :0.00}%" : "0.00%";
+                }
+            }
+            <tr>
+                <td>Productive Hours</td>
+                <td>@Model.ProductiveHours</td>
+                <td>@FormatPercentage(Math.Round(Model.ProductiveHours, 2), totalHours)</td>
+            </tr>
+            <tr>
+                <td>Supportive Hours</td>
+                <td>@Model.SupportiveHours</td>
+                <td>@FormatPercentage(Math.Round(Model.SupportiveHours, 2), totalHours)</td>
+            </tr>
+            <tr>
+                <td>Development Hours</td>
+                <td>@Model.DevelopmentHours</td>
+                <td>@FormatPercentage(Math.Round(Model.DevelopmentHours, 2), totalHours)</td>
+            </tr>
+            <tr>
+                <td>Non-Productive Hours</td>
+                <td>@Model.NonProductiveHours</td>
+                <td>@FormatPercentage(Math.Round(Model.NonProductiveHours, 2), totalHours)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3 class="mt-5">Individual Breakdown</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Author</th>
+                <th>Productive Hours</th>
+                <th>Supportive Hours</th>
+                <th>Development Hours</th>
+                <th>Non-Productive Hours</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var author in Model.IndividualProductiveHours.Keys)
+            {
+                <tr>
+                    <td>@author</td>
+                    <td>@(Math.Round(Model.IndividualProductiveHours[author], 2))</td>
+                    <td>@(Model.IndividualSupportiveHours.ContainsKey(author) ? Math.Round(Model.IndividualSupportiveHours[author], 2) : 0)</td>
+                    <td>@(Model.IndividualDevelopmentHours.ContainsKey(author) ? Math.Round(Model.IndividualDevelopmentHours[author], 2) : 0)</td>
+                    <td>@(Model.IndividualNonProductiveHours.ContainsKey(author) ? Math.Round(Model.IndividualNonProductiveHours[author], 2) : 0)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    
+        function createCombinedChart(ctx, labels, data) {
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data.map(d => d.hours),
+                        backgroundColor: ['#007bff', '#28a745', '#dc3545', '#ffc107'],
+                        borderWidth: 1
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    tooltips: {
+                        callbacks: {
+                            label: function (tooltipItem, data) {
+                                var dataset = data.datasets[tooltipItem.datasetIndex];
+                                var total = dataset.data.reduce((acc, value) => acc + value, 0);
+                                var currentValue = dataset.data[tooltipItem.index];
+                                var percentage = Math.round((currentValue / total) * 100);
+                                return `${data.labels[tooltipItem.index]}: ${currentValue} hours (${percentage}%)`;
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            var ctx = document.getElementById('combinedHoursChart').getContext('2d');
+            createCombinedChart(ctx, ['Productive Hours', 'Supportive Hours', 'Development Hours', 'Non-Productive Hours'], [
+                { hours: @Model.ProductiveHours.ToString().Replace(",",".") },
+                { hours: @Model.SupportiveHours.ToString().Replace(",", ".") },
+                { hours: @Model.DevelopmentHours.ToString().Replace(",", ".") },
+                { hours: @Model.NonProductiveHours.ToString().Replace(",", ".") }
+            ]);
+        });
+    </script>
+}
