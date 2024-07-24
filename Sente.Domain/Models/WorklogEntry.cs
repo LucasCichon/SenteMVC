@@ -1,4 +1,6 @@
 ﻿
+using Sente.Domain.Common;
+
 namespace Sente.Domain.Models
 {
     public class WorklogEntry
@@ -8,7 +10,7 @@ namespace Sente.Domain.Models
         public string Project { get; set; }
         public string Issue { get; set; }
         public string IssueSummary { get; set; }
-        public string Qualification { get; set; }
+        public HourCategory Qualification { get; set; }
         public double TimeSpent { get; set; }
         public DateTime WorklogDate { get; set; }
         public DateTime WorklogStartTimestamp { get; set; }

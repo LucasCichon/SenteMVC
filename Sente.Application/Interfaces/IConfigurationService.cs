@@ -1,4 +1,5 @@
-﻿using Sente.Domain.Models.Config;
+﻿using Sente.Domain.Common;
+using Sente.Domain.Models.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,8 @@ namespace Sente.Application.Interfaces
 {
     public interface IConfigurationService
     {
-        List<EmployeeConfig> GetEmployees();
+        //List<EmployeeConfig> GetEmployees();
         QualificationCategoriesConfig GetQualificationCategories();
+        List<HourCategory> GetQualificationCategoriesList();
     }
 }

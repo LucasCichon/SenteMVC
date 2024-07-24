@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Sente.Application.Interfaces;
+using Sente.Domain.Common;
+using Sente.Domain.Common.Extensions;
 using Sente.Domain.Models.Config;
 
 namespace Sente.Application.Services
@@ -13,17 +15,17 @@ namespace Sente.Application.Services
             _configuration = configuration;
         }
 
-        public List<EmployeeConfig> GetEmployees()
-        {
-            //Get the Employees section from appsettings.json
-            var employeesSection = _configuration.GetSection("Employees");
+        //public List<EmployeeConfig> GetEmployees()
+        //{
+        //    //Get the Employees section from appsettings.json
+        //    var employeesSection = _configuration.GetSection("Employees");
 
-            // Deserialize the Employees section into a List<EmployeeConfig>
-            var employees = new List<EmployeeConfig>();
-            employeesSection.Bind(employees);
+        //    // Deserialize the Employees section into a List<EmployeeConfig>
+        //    var employees = new List<EmployeeConfig>();
+        //    employeesSection.Bind(employees);
 
-            return employees;
-        }
+        //    return employees;
+        //}
 
         public QualificationCategoriesConfig GetQualificationCategories()
         {
@@ -35,6 +37,18 @@ namespace Sente.Application.Services
         qualificationCategoriesSection.Bind(qualificationCategories);
 
         return qualificationCategories;
+        }
+
+        public List<HourCategory> GetQualificationCategoriesList()
+        {
+            var categories = GetQualificationCategories();
+            var result = new List<HourCategory>();
+            result.AddRange(categories.Productive.Select(c => c.ToHourCategory()));
+            result.AddRange(categories.Supportive.Select(c => c.ToHourCategory()));
+            result.AddRange(categories.Development.Select(c => c.ToHourCategory()));
+            result.AddRange(categories.NonProductive.Select(c => c.ToHourCategory()));
+
+            return result;
         }
     }
 }

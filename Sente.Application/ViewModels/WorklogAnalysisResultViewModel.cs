@@ -9,7 +9,20 @@ namespace Sente.Application.ViewModels
     public class WorklogAnalysisResultViewModel
     {
         public string Author { get; set; }
-        public double ProductiveHours { get; set; }
+        public List<string> Authors { get
+            {
+                var result = new List<string>();
+
+                result.AddRange(IndividualProductiveHours_DeveloperWork.Keys);
+                result.AddRange(IndividualProductiveHours_Compliances.Keys);
+                result.AddRange(IndividualSupportiveHours.Keys);
+                result.AddRange(IndividualDevelopmentHours.Keys);
+                result.AddRange(IndividualNonProductiveHours.Keys);
+
+                return result.Distinct().ToList();
+            } }
+        public double ProductiveHours_DeveloperWork { get; set; }
+        public double ProductiveHours_Compliances { get; set; }
         public double SupportiveHours { get; set; }
         public double DevelopmentHours { get; set; }
         public double NonProductiveHours { get; set; }
@@ -21,9 +34,11 @@ namespace Sente.Application.ViewModels
         public double W_Hours { get; set; }
 
         // Add dictionaries for detailed breakdown
-        public Dictionary<string, double> IndividualProductiveHours { get; set; } = new Dictionary<string, double>();
+        public Dictionary<string, double> IndividualProductiveHours_DeveloperWork { get; set; } = new Dictionary<string, double>();
+        public Dictionary<string, double> IndividualProductiveHours_Compliances { get; set; } = new Dictionary<string, double>();
         public Dictionary<string, double> IndividualSupportiveHours { get; set; } = new Dictionary<string, double>();
         public Dictionary<string, double> IndividualDevelopmentHours { get; set; } = new Dictionary<string, double>();
         public Dictionary<string, double> IndividualNonProductiveHours { get; set; } = new Dictionary<string, double>();
+
     }
 }

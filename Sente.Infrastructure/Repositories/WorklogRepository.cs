@@ -1,6 +1,7 @@
 ﻿using FirebirdSql.Data.FirebirdClient;
 using FirebirdSql.Data.Services;
 using Microsoft.Extensions.Configuration;
+using Sente.Domain.Common.Extensions;
 using Sente.Domain.Interfaces;
 using Sente.Domain.Models;
 using System;
@@ -46,7 +47,7 @@ namespace Sente.Infrastructure.Repositories
                                 Project = reader.GetString(2),
                                 Issue = reader.GetString(3),
                                 IssueSummary = reader.GetString(4),
-                                Qualification = reader.GetString(5),
+                                Qualification = reader.GetString(5).ToHourCategory(),
                                 TimeSpent = reader.GetDouble(6),
                                 WorklogDate = reader.GetDateTime(7),
                                 WorklogStartTimestamp = reader.GetDateTime(8),
