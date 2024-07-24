@@ -1,11 +1,6 @@
 ﻿using AutoMapper;
 using Sente.Application.ViewModels;
 using Sente.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sente.Application.Mapping
 {
@@ -14,7 +9,9 @@ namespace Sente.Application.Mapping
         public WorklogMappingProfile()
         {
             CreateMap<WorklogEntry, WorklogEntryViewModel>().ReverseMap();
-            CreateMap<WorklogAnalysisResult, WorklogAnalysisResultViewModel>();            // Add more mappings as needed
+            CreateMap<WorklogAnalysisResult, WorklogAnalysisResultViewModel>();
+            CreateMap<Sente.Domain.Models.Qualification, Sente.Application.ViewModels.Qualification>();// Add more mappings as needed
+            CreateMap<Sente.Domain.Models.Hours, Sente.Application.ViewModels.Hours>();// Add more mappings as needed
         }
     }
 }

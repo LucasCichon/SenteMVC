@@ -15,38 +15,39 @@ namespace Sente.Application.Services
             _configuration = configuration;
         }
 
-        //public List<EmployeeConfig> GetEmployees()
-        //{
-        //    //Get the Employees section from appsettings.json
-        //    var employeesSection = _configuration.GetSection("Employees");
-
-        //    // Deserialize the Employees section into a List<EmployeeConfig>
-        //    var employees = new List<EmployeeConfig>();
-        //    employeesSection.Bind(employees);
-
-        //    return employees;
-        //}
-
-        public QualificationCategoriesConfig GetQualificationCategories()
+        public List<EmployeeConfig> GetEmployees()
         {
-            // Get the QualificationCategories section from appsettings.json
-        var qualificationCategoriesSection = _configuration.GetSection("QualificationCategories");
+            //Get the Employees section from appsettings.json
+            var employeesSection = _configuration.GetSection("Employees");
 
-        // Deserialize the QualificationCategories section into QualificationCategoriesConfig
-        var qualificationCategories = new QualificationCategoriesConfig();
-        qualificationCategoriesSection.Bind(qualificationCategories);
+            // Deserialize the Employees section into a List<EmployeeConfig>
+            var employees = new List<EmployeeConfig>();
+            employeesSection.Bind(employees);
 
-        return qualificationCategories;
+            return employees;
         }
 
-        public List<HourCategory> GetQualificationCategoriesList()
+        public CategoriesConfig GetQualificationCategories()
         {
-            var categories = GetQualificationCategories();
-            var result = new List<HourCategory>();
-            result.AddRange(categories.Productive.Select(c => c.ToHourCategory()));
-            result.AddRange(categories.Supportive.Select(c => c.ToHourCategory()));
-            result.AddRange(categories.Development.Select(c => c.ToHourCategory()));
-            result.AddRange(categories.NonProductive.Select(c => c.ToHourCategory()));
+            // Get the QualificationCategories section from appsettings.json
+        var qualificationCategoriesSection = _configuration.GetSection("Categories");
+
+        // Deserialize the QualificationCategories section into QualificationCategoriesConfig
+        var qualificationCategories = new List<CategoryConfig>();
+        qualificationCategoriesSection.Bind(qualificationCategories);
+
+            return new CategoriesConfig() { Categories = qualificationCategories };
+        }
+
+        public List<string> GetQualificationCategoriesList()
+        {
+            var categoriesConfig = GetQualificationCategories();
+            var result = new List<string>();
+
+            foreach(var c in categoriesConfig.Categories)
+            {
+                result.AddRange(c.Items);
+            }
 
             return result;
         }

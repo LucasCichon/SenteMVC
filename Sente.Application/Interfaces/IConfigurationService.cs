@@ -11,7 +11,7 @@ namespace Sente.Application.Interfaces
     public interface IConfigurationService
     {
         //List<EmployeeConfig> GetEmployees();
-        QualificationCategoriesConfig GetQualificationCategories();
-        List<HourCategory> GetQualificationCategoriesList();
+        CategoriesConfig GetQualificationCategories();
+        List<string> GetQualificationCategoriesList();
     }
 }

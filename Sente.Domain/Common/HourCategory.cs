@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Sente.Domain.Common
 {
-    public enum HourCategory
-    {
-        RP,
-        R,
-        HD,
-        SZ,
-        W
-    }
+    //public enum HourCategory
+    //{
+    //    RP,
+    //    R,
+    //    HD,
+    //    SZ,
+    //    W
+    //}
 }

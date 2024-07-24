@@ -39,70 +39,76 @@
         </thead>
         <tbody>
             @{
-                var totalHours = Math.Round(Model.ProductiveHours_DeveloperWork + Model.ProductiveHours_Compliances + Model.SupportiveHours + Model.DevelopmentHours + Model.NonProductiveHours, 2);
+                var total = Model.AllHoursWithTypes.Sum(h => h.Value);
+                var totalHours = Math.Round(total, 2);
 
                 string FormatPercentage(double part, double total)
                 {
                     return total > 0 ? $"{Math.Round((part / total * 100), 2) :0.00}%" : "0.00%";
                 }
             }
-            <tr>
-                <td>Productive Hours (Developer Work)</td>
-                <td>@Model.ProductiveHours_DeveloperWork</td>
-                <td>@FormatPercentage(Math.Round(Model.ProductiveHours_DeveloperWork, 2), totalHours)</td>
-            </tr>
-            <tr>
-                <td>Productive Hours (Compliances)</td>
-                <td>@Model.ProductiveHours_Compliances</td>
-                <td>@FormatPercentage(Math.Round(Model.ProductiveHours_Compliances, 2), totalHours)</td>
-            </tr>
-            <tr>
-                <td>Supportive Hours</td>
-                <td>@Model.SupportiveHours</td>
-                <td>@FormatPercentage(Math.Round(Model.SupportiveHours, 2), totalHours)</td>
-            </tr>
-            <tr>
-                <td>Development Hours</td>
-                <td>@Model.DevelopmentHours</td>
-                <td>@FormatPercentage(Math.Round(Model.DevelopmentHours, 2), totalHours)</td>
-            </tr>
-            <tr>
-                <td>Non-Productive Hours</td>
-                <td>@Model.NonProductiveHours</td>
-                <td>@FormatPercentage(Math.Round(Model.NonProductiveHours, 2), totalHours)</td>
-            </tr>
+            @{
+
+                foreach (var hourType in Model.Types)
+                {
+                    var hourValue = Model.AllHoursWithTypes.Where(h => h.Qualification.ItemSymbol == hourType).Sum(h => h.Value);
+                    <tr>
+                        <td>@hourType</td>
+                        <td>@hourValue</td>
+                        <td>@FormatPercentage(Math.Round(hourValue, 2), totalHours)</td>
+                    </tr>
+                }
+            }
         </tbody>
     </table>
 
 
     <h3 class="mt-5">Individual Breakdown</h3>
     @{
-        var authorData = new Dictionary<string, object>();
+        var authorData = new Dictionary<string, List<object>>();
 
         foreach (var author in Model.Authors)
         {
-            authorData[author] = new
+            List<object> hours = new List<object>();
+            foreach (var type in Model.Types)
             {
-                IndividualProductiveHours_DeveloperWork = Model.IndividualProductiveHours_DeveloperWork[author].ToString().Replace(",", "."),
-                IndividualProductiveHours_Compliances = Model.IndividualProductiveHours_Compliances[author].ToString().Replace(",", "."),
-                IndividualSupportiveHours = Model.IndividualSupportiveHours[author].ToString().Replace(",", "."),
-                IndividualDevelopmentHours = Model.IndividualDevelopmentHours[author].ToString().Replace(",", "."),
-                IndividualNonProductiveHours = Model.IndividualNonProductiveHours[author].ToString().Replace(",", ".")
-            };
+
+                var currentHours = Model.AllIndyvidualHoursWithTypes[author].FirstOrDefault(h => h.Qualification.ItemSymbol == type);
+
+                if(currentHours != null)
+                {
+
+                    hours.Add(new
+                    {
+                        type = type,
+                        hours = currentHours.Value.ToString().Replace(",", ".")
+                    });
+                }
+            }
+            authorData[author] = hours;
         }
+
+        var allHoursByType = new Dictionary<string, string>();
+
+        foreach (var type in Model.Types)
+        {
+            allHoursByType.Add(type, Model.AllHoursWithTypes.Where(h => h.Qualification.ItemSymbol == type).Sum(h => h.Value).ToString());
+        }
+
     }
 
     <script>
         var authorData = @Html.Raw(Json.Serialize(authorData));
+        var allHoursByType = @Html.Raw(Json.Serialize(allHoursByType));
     </script>
 
     <div class="row">
         @foreach (var author in Model.Authors)
         {
-                <div class="col-md-4 smallChart" >
-                    <h4>@author Hours</h4>
-                    <canvas class="authorHoursChart" data-author="@author"></canvas>
-                </div>
+            <div class="col-md-4 smallChart" >
+                <h4>@author Hours</h4>
+                <canvas class="authorHoursChart" data-author="@author"></canvas>
+            </div>
         }
     </div>
    <br/>
@@ -110,23 +116,26 @@
         <thead>
             <tr>
                 <th>Author</th>
-                <th>Productive Hours (Developer Work)</th>
-                <th>Productive Hours (Compliances)</th>
-                <th>Supportive Hours</th>
-                <th>Development Hours</th>
-                <th>Non-Productive Hours</th>
+                @foreach (var type in Model.Types)
+                {
+                   <th>@type</th>        
+                }
+                
             </tr>
         </thead>
         <tbody>
-            @foreach (var author in Model.IndividualProductiveHours_DeveloperWork.Keys)
+            @foreach (var author in Model.Authors)
             {
                 <tr>
                     <td>@author</td>
-                    <td>@(Math.Round(Model.IndividualProductiveHours_DeveloperWork[author], 2))</td>
-                    <td>@(Math.Round(Model.IndividualProductiveHours_Compliances[author], 2))</td>
-                    <td>@(Model.IndividualSupportiveHours.ContainsKey(author) ? Math.Round(Model.IndividualSupportiveHours[author], 2) : 0)</td>
-                    <td>@(Model.IndividualDevelopmentHours.ContainsKey(author) ? Math.Round(Model.IndividualDevelopmentHours[author], 2) : 0)</td>
-                    <td>@(Model.IndividualNonProductiveHours.ContainsKey(author) ? Math.Round(Model.IndividualNonProductiveHours[author], 2) : 0)</td>
+                    @foreach(var type in Model.Types)
+                    {
+                        if(Model.AllIndyvidualHoursWithTypes.Keys.Any(k => k == author))
+                        {
+                            var value = Model.AllIndyvidualHoursWithTypes[author].FirstOrDefault(h => h.Qualification.ItemSymbol == type)?.Value ?? 0;
+                            <td>@(Math.Round(value, 2))</td>   
+                        }
+                    }
                 </tr>
             }
         </tbody>
@@ -169,41 +178,53 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
+            let data = [];
+            let types = [];
+            let dataByType = window.allHoursByType;
+
+            Object.keys(dataByType).forEach(function (type) {
+                data.push({ hours: dataByType[type].toString().replace(",",".") });
+            });
+
+            Object.keys(dataByType).forEach(function (type) {
+                types.push(type.toString());
+            });
+
             let ctx = document.getElementById('combinedHoursChart').getContext('2d');
-            createCombinedChart(ctx, ['Productive Hours (Developer Work)', 'Productive Hours (Compliance)' , 'Supportive Hours', 'Development Hours', 'Non-Productive Hours'], [
-                { hours: @Model.ProductiveHours_DeveloperWork.ToString().Replace(",",".") },
-                { hours: @Model.ProductiveHours_Compliances.ToString().Replace(",",".") },
-                { hours: @Model.SupportiveHours.ToString().Replace(",", ".") },
-                { hours: @Model.DevelopmentHours.ToString().Replace(",", ".") },
-                { hours: @Model.NonProductiveHours.ToString().Replace(",", ".") }
-            ]);
+
+            createCombinedChart(ctx, types, data);
         });
+
 
         document.addEventListener("DOMContentLoaded", function () {
             // Fetch all elements with the class 'authorHoursChart'
             let charts = document.getElementsByClassName('authorHoursChart');
+            let dataByType = window.allHoursByType;
 
             // Loop through each canvas element
             Array.from(charts).forEach(function (chart) {
+
+
                 let author = chart.getAttribute('data-author'); // Get the author name from the data-author attribute
                 let ctx = chart.getContext('2d'); // Get the context for the current canvas
-
-
                 let authorInfo = authorData[author];
-          
-                // Fetch the data for the current author
-                let data = [
-                    { hours: authorInfo.individualProductiveHours_DeveloperWork },
-                    { hours: authorInfo.individualProductiveHours_Compliances },
-                    { hours: authorInfo.individualSupportiveHours },
-                    { hours: authorInfo.individualDevelopmentHours },
-                    { hours: authorInfo.individualNonProductiveHours }
-                ];
+                console.log(authorData[author]);
 
-                console.log("data");
-                console.log(data);
-                // Create the chart for the current author
-                createCombinedChart(ctx, ['Productive Hours (Developer Work)', 'Productive Hours (Compliance)', 'Supportive Hours', 'Development Hours', 'Non-Productive Hours'], data);
+                let data = [];
+                let types = [];
+
+                Object.keys(authorInfo).forEach(function (key) {
+
+                    console.log(key);
+                    let currentHours = authorInfo[key];
+
+
+                    data.push({ hours: currentHours.hours });
+
+                    types.push(currentHours.type.toString());
+                })
+
+                createCombinedChart(ctx, types, data);
             });
         });
     </script>
